@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload Form</title>
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+</head>
+<body>
+  <!-- Simple UI form -->
+  <button id="login" style="display: block;">Login</button>
+	<div id="profile" style="display: none;">
+    <div id="profileInfo"></div>
+    <button id="logout">Logout</button>
+    <div style="margin-top: 30px;">
+      <h3>Upload File</h3>
+      <input type="file" id="fileInput" />
+      <button id="upload">Upload</button>
+    </div>
+  </div>
+
+  <script>
+    let accessToken = null; // Will be set after login
+    // const presignUrlEndpoint = "http://localhost:3000/presign-url"; // local backend endpoint
+    const presignUrlEndpoint = "https://agvlenw36m.execute-api.ap-southeast-2.amazonaws.com/presign-url"; // API Gateway endpoint
+
+    const fileInput = document.getElementById("fileInput");
+		const uploadButton = document.getElementById("upload");
+
+		auth0.createAuth0Client({
+			domain: "pamit.au.auth0.com",
+			clientId: "LHY7LxO4oieiNxOZ5RR7JksdRm0A3XNg",
+			authorizationParams: {
+        audience: 'https://pamit.au.auth0.com/api/v2/',
+				redirect_uri: window.location.origin
+			}
+		}).then(async (auth0Client) => {
+			const loginButton = document.getElementById("login");
+			loginButton.addEventListener("click", (e) => {
+				e.preventDefault();
+				auth0Client.loginWithRedirect();
+			});
+
+			if (location.search.includes("state=") &&
+					(location.search.includes("code=") ||
+					location.search.includes("error="))) {
+				await auth0Client.handleRedirectCallback();
+				window.history.replaceState({}, document.title, "/");
+			}
+
+			const logoutButton = document.getElementById("logout");
+			logoutButton.addEventListener("click", (e) => {
+				e.preventDefault();
+				auth0Client.logout();
+			});
+
+			const isAuthenticated = await auth0Client.isAuthenticated();
+      accessToken = await auth0Client.getTokenSilently();
+      console.log("Auth0 user authenticated:", isAuthenticated);
+			const userProfile = await auth0Client.getUser();
+
+			const profile = document.getElementById("profile");
+			const profileInfo = document.getElementById("profileInfo");
+			if (isAuthenticated) {
+				loginButton.style.display = "none";
+				profile.style.display = "block";
+				profileInfo.innerHTML = `
+          <p>${userProfile.name}</p>
+          <img src="${userProfile.picture}" />
+        `;
+			}
+		});
+
+    // Handle file upload
+    uploadButton.onclick = async () => {
+      const file = fileInput.files[0];
+      if (!file || !accessToken) return alert("Log in and choose a file");
+      const fileParams = { filename: file.name, type: file.type }
+
+      // Get pre-signed URL from backend
+      const res = await fetch(presignUrlEndpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fileParams),
+      });
+      const { url } = await res.json();
+      console.log("Received pre-signed URL:", url);
+
+      // Upload file to S3
+      await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+
+      alert("Uploaded!");
+    };
+  </script>
+</body>
+</html>
