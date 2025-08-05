@@ -1,0 +1,4 @@
+auth0_domain   = ""
+auth0_audience = ""
+region         = ""
+bucket_name    = ""

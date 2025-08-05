@@ -20,7 +20,7 @@
   <script>
     let accessToken = null; // Will be set after login
     // const presignUrlEndpoint = "http://localhost:3000/presign-url"; // local backend endpoint
-    const presignUrlEndpoint = "https://agvlenw36m.execute-api.ap-southeast-2.amazonaws.com/presign-url"; // API Gateway endpoint
+    const presignUrlEndpoint = "https://7gatz2748d.execute-api.ap-southeast-2.amazonaws.com/presign-url"; // API Gateway endpoint
 
     const fileInput = document.getElementById("fileInput");
 		const uploadButton = document.getElementById("upload");
@@ -54,7 +54,7 @@
 
 			const isAuthenticated = await auth0Client.isAuthenticated();
       accessToken = await auth0Client.getTokenSilently();
-      console.log("Auth0 user authenticated:", isAuthenticated);
+      console.log("Auth0 user authenticated:", isAuthenticated, accessToken);
 			const userProfile = await auth0Client.getUser();
 
 			const profile = document.getElementById("profile");

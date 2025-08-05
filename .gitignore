@@ -10,6 +10,8 @@ lambda.zip
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+*.tfvars
 
 package-lock.json
 yarn.lock
+
