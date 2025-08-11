@@ -4,6 +4,8 @@ This project allows users to upload files to an AWS S3 bucket using a Lambda fun
 
 ![Architecture](architecture.png "Architecture")
 
+![Architecture](architecture2.png "Architecture")
+
 ## Prerequisites
 
 Create an Auth0 account and set up an application. You will need the following details:
